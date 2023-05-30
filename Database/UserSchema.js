@@ -1,116 +1,143 @@
 const mongoose = require('mongoose');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
+const ProductModel = require('./ProductSchema');
+
 const UserSchema = new mongoose.Schema({
-    name:{
+    firstName:{
         type: String,
-        required: true,
+    },
+    lastName:{
+        type: String,
     },
     email:{
         type: String,
-        required: true,
     },
     password:{
         type: String,
-        required: true,
     },
-    birthday:{
-        type: Date,
-        required: true
+    username:{
+        type: String,
     },
     RegisteredDate:{
         type: Date,
         default: Date.now, 
     },
-    totalbalance:{
-        type: Number
+    emailVerified: {
+        type: Boolean,
+        default: false,
     },
-    ppstart:{
-        type: Number
+    emailTokens:[{type: String}],
+    stripeVerified: {
+        type: Boolean,
+        default: false,
     },
-    ppadvance:{
-        type: Number
+    saved:[{ type: String }],
+    consignmentPoints: {
+        type: Number,
+        default: 0,
     },
-    pppro:{
-        type: Number
-    },
-    initialcapital:{
-        type: Number
-    },
-    grancias:{
-        type: Number
-    },
-    bloqueado:{
-        type: Number
-    },
-    disponible:{
-        type: Number
-    },
-    miembrostotale:{
-        type: Number
-    },
-    derivadostotale:{
-        type: Number
-    },
-    rangostotale:{
-        type: Number
-    },
-    ultimorango:{
-        type: Number
-    },
-    saldo:{
-        type: Number
-    },
-    cartera:{
-        type: String
-    },
-    mymembresia:{
-        type: String
-    },
-    estrategia:{
-        type: String
-    },
-    ganaciasretirades:{
-        type: Number
-    },
-    totaldisponible:{
-        type: Number
-    },
-    pic:{
-        type: Number
-    },
-    tc:{
-        type: Number
-    },
-    membreciabtc500:{
-        type: Number
-    },
-    membreciabtc1000:{
-        type: Number
-    },
-    fullname:{
-        type: String
-    },
-    bankname:{
-        type: String
-    },
-    iban:{
-        type: String
-    },
-    phone:{
-        type: String
-    },
-    country:{
-        type: String
-    },
-    withdraws: [
+    consignmentTokens: [
         {
-            withdraw: Number,
+            token: String,
+            firstName: String,
+            lastName: String,
+            carMake: String,
+            carModel: String,
+            notes: String,
+            images: [{ type: String }],
+            date:{
+                type: Date,
+                default: Date.now,
+            }
         }
     ],
-    members: [
+    consignments: [
         {
-            memberid: String,
+            price:String,
+            year: String,
+            make:String,
+            model:String,
+            located:String,
+            mileage:String,
+            owners:String,
+            license:String,
+            chassis:String,
+            engineSize:String,
+            engineType:String,
+            transmission:String,
+            speeds:String,
+            exteriorColor:String,
+            interiorColor:String,
+            bodyworkDamage:String,
+            paintworkDamage:String,
+            discolouration :String,
+            faults:String,
+            cambelt:String,
+            conditionOfTyres:String,
+            notOriginalParts:String,
+            customised:String,
+            knownFaults:String,
+            p3q1:String,
+            p3q2:String,
+            p3q3:String,
+            p3q4:String,
+            p3q5:String,
+            p3q6:String,
+            p3q7:String,
+            p3q8:String,
+            p3q9:String,
+            p3q10:String,
+            p3q11:String,
+            p3q12:String,
+            p3q13:String,
+            image_urls:[{ type: String }],
+            reference:{
+                ref_token: String,
+                firstName: String,
+                lastName: String,
+                carMake: String,
+                carModel: String,
+                notes: String,
+                ref_images: [{ type: String }],
+                date:{
+                    type: Date,
+                }
+            },
+            date:{
+                type: Date,
+                default: Date.now,
+            }
+        }
+    ],
+    resetPasswordToken: String,
+    resetPasswordExpires: Date,
+    resetPassAppliedDate: Date,
+    Enquiries:[
+        {
+            firstName: String,
+            lastName: String,
+            email: String,
+            phone: String,
+            notification: Boolean,
+            category: String,
+            carMake: String,
+            carModel: String,
+            notes: String,
+            images: [{ type: String }],
+            date:{
+                type: Date,
+                default: Date.now,
+            }
+        }
+    ],
+    otp:[
+        {
+            code: Number,
+            date: {
+                type: Date,
+                default: Date.now, 
+            },
         }
     ],
     tokens: [

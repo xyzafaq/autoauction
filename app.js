@@ -3,14 +3,23 @@ const express = require('express');
 const app = express();
 const dotenv = require('dotenv');
 const cookieParser = require('cookie-parser')
+const path = require('path'); // For working with file paths
 app.use(cors());
 app.use(cookieParser());
 app.use(express.json());
 require('./Database/connec')    //Database connected file
 app.use(require('./pages/Pages'));  //Accessing router exported from Pages
 
+const bodyParser = require('body-parser');
+// set limit to 10MB
+app.use(bodyParser.json({ limit: '10mb' }));
+app.use(bodyParser.urlencoded({ limit: '10mb', extended: true }));
+
+// app.use(express.static(path.join(__dirname, 'public')));
+app.use(express.static('public'));
+
 dotenv.config({path:'./config.env'});   //Giving path of config.env file
-const PORT = process.env.PORT;   //Accessing PORT from env file
+const PORT = 5000;   //Accessing PORT from env file
 
 // if( process.env.NODE_ENV == "production"){
 //     app.use(express.static("client/build"));
