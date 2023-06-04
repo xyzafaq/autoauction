@@ -19,7 +19,7 @@ app.use(bodyParser.urlencoded({ limit: '10mb', extended: true }));
 app.use(express.static('public'));
 
 dotenv.config({path:'./config.env'});   //Giving path of config.env file
-const PORT = 5000;   //Accessing PORT from env file
+const PORT = 6605;   //Accessing PORT from env file
 
 // if( process.env.NODE_ENV == "production"){
 //     app.use(express.static("client/build"));
