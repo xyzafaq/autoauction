@@ -466,7 +466,7 @@ router.post('/consignmentForm',async (req,res)=>{
             } else {
                 res.send({msg:'success'});
                 console.log('Email sent:');
-                await UserModel.findOneAndUpdate({email:to},{$push:{consignmentTokens:{token,firstName,lastName,carMake,carModel,images,notes}},$inc:{consignmentPoints:1}});
+                await UserModel.findOneAndUpdate({email:to},{$push:{consignmentTokens:{token,firstName,lastName,carMake,carModel,images,notes,email:to}},$inc:{consignmentPoints:1}});
             }
         });
     } catch (error) {
@@ -666,7 +666,6 @@ router.post('/UploadArticle', upload.array('images'), async (req, res) => {
 // Product Page Api
 router.post('/UpdateProduct/:id', upload.fields([{ name: 'image', maxCount: 1 },{ name: 'images1', maxCount: 50 },{ name: 'images2', maxCount: 50 },{ name: 'images3', maxCount: 50 },{ name: 'images4', maxCount: 50 }]), async (req, res) => {
     try {
-        
         const { title,VIN,userEmail,category,duration,startPrice,price,side,country,OdometerReading,unit,TransmissionType,color,EngineDisplacement,VIP,ModelNumber,lotNumber,saleType,summary,youtubeLink,thumbnail } = req.body;        
         const keyFactors = req.body.keyFactors.split(',');
         const equipmenatAndFeatures = req.body.equipmenatAndFeatures.split(',');
@@ -762,11 +761,12 @@ router.post('/UpdateProduct/:id', upload.fields([{ name: 'image', maxCount: 1 },
         //     EngineDisplacement,VIP,ModelNumber,lotNumber,saleType,summary,youtubeLink,keyFactors,equipmenatAndFeatures,condition,serviceHistory
         // });
         // const ProductUploaded = await newProduct.save();
+        const endTime = new Date().getTime() + duration * 24 * 60 * 60 * 1000;
         const updatedProduct = await ProductModel.findOneAndUpdate(
             { _id: req.params.id },
             {
               title,VIN,userEmail,category,duration,startPrice,price,side,country,OdometerReading,unit,TransmissionType,color,EngineDisplacement,
-              VIP,ModelNumber,lotNumber,saleType,summary,youtubeLink,keyFactors,equipmenatAndFeatures,condition,serviceHistory
+              VIP,ModelNumber,lotNumber,saleType,summary,youtubeLink,keyFactors,equipmenatAndFeatures,condition,serviceHistory,endTime
             },
             { new: true }
           );
@@ -873,7 +873,7 @@ router.post('/UploadProduct', upload.fields([{ name: 'image', maxCount: 1 },{ na
                   price: startPrice,
                   automatic: true
                 }
-            ], endTime
+            ], endTime            
         });
         const ProductUploaded = await newProduct.save();
         if(ProductUploaded){
@@ -918,23 +918,30 @@ router.get('/getProductByTitle/:title', async (req,res)=>{
         console.log(error);
     }
 })
-// router.get('/allArticles', async (req,res)=>{
-//     try {
-//         const token = req.header("authToken");
-//         if(token.length>10){
-//             const verifyToken = jwt.verify(token,"helloiamafaqstudentofuniversityofmanagementandtechonology");
-//             const rootUser = await UserModel.findOne({_id:verifyToken._id,"tokens.token":token});
-//             if(rootUser.email === 'admin@gmail.com' ){
-//                 const articles = await ArticleModel.find({}).sort({ date: 'desc' });               
-//                 res.send({msg:'success',data:articles});
-//             }
-//         }else{
-//             res.send({msg:"failed"});
-//         }
-//     } catch (error) {
-//         console.log(error);
-//     }
-// })
+router.post('/markAsSoldById/:id', async (req,res)=>{
+    try {
+        const soldDate = new Date();
+        const result = await ProductModel.findOneAndUpdate(
+          { _id: req.params.id },
+          {
+            sold: {
+              price: req.body.price,
+              status: true,
+              date: soldDate,
+            },
+            category: 'sold'
+          },
+          { new: true }
+        );
+        if(result){
+            res.send({msg:'success'});
+        }else{
+            res.send({msg:'failed'});
+        }
+    } catch (error) {
+        console.log(error);
+    }
+})
 router.get('/allArticles', async (req,res)=>{
     try {
         const articles = await ArticleModel.find({}).sort({ date: 'desc' });               
@@ -1134,7 +1141,6 @@ router.get('/getAllConsignments', async (req,res)=>{
         console.log(error);
     }
 })
-
 // Place Bids by user
 // router.post('/placeBid', async (req,res)=>{
 //     const { price,ProductId,email,username } = req.body;
@@ -1195,14 +1201,89 @@ router.post('/placeBid', async (req, res) => {
         console.log(error);
     }
 });
-
-router.get('/save-product/:id', async (req, res)=>{
+router.post('/placeOffer', async (req, res) => {
     try {
+        const { price, ProductId, email, username } = req.body;
+        const newOffer = {
+          email: email,
+          username: username,
+          price: price,
+          automatic: false,
+        };
+        // const result = await ProductModel.findByIdAndUpdate(
+        // ProductId,
+        // {
+        //   $push: { offers: { $each: [newOffer], $position: 0 } },
+        // },
+        // { new: true });
+        const result = await ProductModel.findByIdAndUpdate(
+            ProductId,
+            {
+              $push: {
+                offers: {
+                  $each: [newOffer],
+                  $sort: { price: -1 },
+                },
+              },
+            },
+            { new: true }
+          );          
+        if (result) {
+            console.log('success');
+            res.send({ msg: 'success' });
+        } else {
+            console.log('failed');
+            res.send({ msg: 'failed' });
+        }
+        // if (price > highestOffer) {
+        // } else {
+        //   res.send({ msg:'invalid'});
+        //   console.log('invalid');
+        // }
+    } catch (error) {
+        console.log(error);
+    }
+});
+router.post('/save-product/:id', async (req, res)=>{
+    try {
+        // console.log(req.params.id);
         const {userId} = req.body;
-        const save = await UserModel.findOneAndUpdate({_id:userId},{$push:{saved:req.params.id}});
+        // console.log(userId);
+        // const save = await UserModel.findOneAndUpdate({_id:userId},{$push:{saved:req.params.id}});
+        const save = await UserModel.findOneAndUpdate({_id:userId},{$push:{saved:{$each:[req.params.id],$position: 0}}});
         // console.log(save);
         if(save){
             res.send({msg:'success'})
+        }else{
+            res.send({msg:'failed'})
+        }
+    } catch (error) {
+        console.log(error);
+    }
+})
+router.post('/unsave-product/:id', async (req, res)=>{
+    try {
+        // console.log(req.params.id);
+        const {userId} = req.body;
+        // console.log(userId);
+        const save = await UserModel.findOneAndUpdate({_id:userId},{$pull:{saved:req.params.id}});
+        // console.log(save);
+        if(save){
+            res.send({msg:'success'})
+        }else{
+            res.send({msg:'failed'})
+        }
+    } catch (error) {
+        console.log(error);
+    }
+})
+router.get('/getSavedProductsByID/:id', async (req, res)=>{
+    try {
+        console.log(req.params.id);
+        const product = await ProductModel.findOne({_id: req.params.id });
+        // console.log(product);
+        if(product){
+            res.send({msg:'success',data:product})
         }else{
             res.send({msg:'failed'})
         }

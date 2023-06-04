@@ -45,6 +45,7 @@ const UserSchema = new mongoose.Schema({
             carMake: String,
             carModel: String,
             notes: String,
+            email: String,
             images: [{ type: String }],
             date:{
                 type: Date,

@@ -42,9 +42,27 @@ const ProductSchema = new mongoose.Schema({
             }
         }
     ],
+    offers:[
+        {
+            email: String,
+            username: String,
+            country: String,
+            price: Number,
+            automatic: Boolean,
+            date:{
+                type: Date,
+                default: Date.now,
+            }
+        }
+    ],
     date:{
         type: Date,
         default: Date.now,
+    },
+    sold:{
+        price: Number,
+        status: Boolean,
+        date: Date,
     }
 })
 const ProductModel = new mongoose.model('Product',ProductSchema);
