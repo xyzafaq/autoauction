@@ -1,5 +1,5 @@
-const cors=require('cors')
 const express = require('express');
+const cors=require('cors');
 const app = express();
 const dotenv = require('dotenv');
 const cookieParser = require('cookie-parser')
@@ -9,7 +9,12 @@ app.use(cookieParser());
 app.use(express.json());
 require('./Database/connec')    //Database connected file
 app.use(require('./pages/Pages'));  //Accessing router exported from Pages
-
+app.use((req, res, next) => {
+  res.setHeader('Access-Control-Allow-Origin', '*');
+  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+  next();
+});
 const bodyParser = require('body-parser');
 // set limit to 10MB
 app.use(bodyParser.json({ limit: '10mb' }));
